@@ -1,0 +1,61 @@
+<meta charset = utf8>
+<html>
+
+<head>
+    <title>Example with buttons</title>
+</head>
+
+<body>
+
+<button id="buttonOn1" onClick="on1()">On 1</button>
+<button id="buttonOff1" onClick="off1()">Off 1</button>
+<br>
+<button id="buttonOn2" onClick="on2()">On 2</button>
+<button id="buttonOff2" onClick="off2()">Off 2</button>
+<br>
+<button id="buttonOn3" onClick="on3()">On 3</button>
+<button id="buttonOff3" onClick="off3()">Off 3</button>
+<br>
+<button id="buttonOn4" onClick="on4()">On 4</button>
+<button id="buttonOff4" onClick="off4()">Off 4</button>
+
+<br>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+
+var socket1 = io.connect("192.168.1.102:8080"); 
+var socket2 = io.connect("192.168.1.104:8080");
+
+
+function on1 () {
+    socket1.emit("commandToArduino", 1);
+}
+function off1 () {
+    socket1.emit("commandToArduino", 0);
+}
+function on2 () {
+    socket1.emit("commandToArduino", 3);
+}
+function off2 () {
+    socket1.emit("commandToArduino", 2);
+}
+function on3 () {
+    socket2.emit("commandToArduino", 1);
+}
+function off3 () {
+    socket2.emit("commandToArduino", 0);
+}
+function on4 () {
+    socket2.emit("commandToArduino", 3);
+}
+function off4 () {
+    socket2.emit("commandToArduino", 2);
+}
+    
+</script>
+    
+</body>
+    
+</html>
