@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta charset = utf8>
+<html>
+
+<head>
+    <title>Example with HW button</title>
+</head>
+
+<body>
+
+<div id="divForPrint"></div>
+
+<br>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+var divForPrint = document.getElementById("divForPrint");
+
+function log(msg) {
+    return "<div>" + msg + "</div>";
+}
+var socket = io.connect("192.168.1.102:8080"); 
+socket.on("messageToClient", function (msg){
+    divForPrint.innerHTML += log(msg); 
+});
+    
+</script>
+    
+</body>
+    
+</html>
