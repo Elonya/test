@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset = utf8>
+<html>
+
+<head>
+    <title>Example with DC motor and buttons</title>
+</head>
+
+<body>
+PWM: <input id="pwm" value=100 />    
+<button id="buttonSendPWM" onClick="sendPWM()">Send PWM</button>
+<button id="buttonLeft" onClick="left()">Left</button>
+<button id="buttonRight" onClick="right()">Right</button>
+<button id="buttonStop" onClick="stop()">Stop</button>
+
+<div id="divForPrint"></div>
+
+<br>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+
+
+var divForPrint = document.getElementById("divForPrint");
+var numberOfLinesInLog = 20; 
+var counterOfLogs = 0; 
+function log(msg) { 
+    var node=document.createElement("tr"); 
+    var textnode=document.createTextNode(counterOfLogs + " | " + msg); 
+    node.appendChild(textnode); 
+    divForPrint.insertBefore(node, divForPrint.childNodes[0]); 
+
+
+
+    if (counterOfLogs > numberOfLinesInLog-1) { 
+        divForPrint.removeChild(divForPrint.childNodes[numberOfLinesInLog]); 
+    }
+    counterOfLogs = counterOfLogs + 1; 
+}
+var socket = io.connect("192.168.1.102:8080"); 
+socket.on("messageToClient", function (msg){
+    log(msg); 
+});
+socket.on("disconnect", function(){
+    log("Disconnected from the server"); 
+});
+function sendPWM () {
+    valuePWM = document.getElementById("pwm").value;
+    socket.emit("sendPWM", valuePWM); 
+};
+function left () {
+    socket.emit("left", {"AIN1": 0, "AIN2": 1});
+};
+function right () {
+    socket.emit("right", {"AIN1": 1, "AIN2": 0});
+};
+function stop () {
+    socket.emit("stop", 0); 
+};
+    
+</script>
+    
+</body>
+    
+</html>
