@@ -1,0 +1,90 @@
+var http = require("http").createServer(handler); 
+var io = require("socket.io").listen(http); 
+var fs = require("fs"); 
+var firmata = require("firmata");
+
+
+console.log("Starting the code");
+
+
+
+var board = new firmata.Board("/dev/ttyACM0", function(){
+    console.log("Connecting to Arduino");
+    console.log("Connecting to Arduino");
+    board.pinMode(0, board.MODES.ANALOG); 
+    board.pinMode(1, board.MODES.ANALOG); 
+    board.pinMode(9, board.MODES.OUTPUT); 
+    board.pinMode(3, board.MODES.PWM);  
+    board.pinMode(4, board.MODES.OUTPUT);
+});
+
+function handler(req, res) {
+    fs.readFile(__dirname + "/example13.html",
+    function (err, data) {
+        if (err) {
+            res.writeHead(500, {"Content-Type": "text/plain"});
+            return res.end("Error loading html page.");
+        }
+    res.writeHead(200);
+    res.end(data);
+    })
+}
+
+
+var desiredValue = 0; 
+var actualValue = 0; 
+
+var factor = 0.1; 
+var pwm = 0; 
+
+
+
+http.listen(8080); 
+
+var sendValueViaSocket = function(){}; 
+
+board.on("ready", function(){
+
+board.analogRead(0, function(value){
+    desiredValue = value; 
+});
+
+board.analogRead(1, function(value){
+    actualValue = value; 
+});
+
+startControlAlgorithm();
+
+
+
+io.sockets.on("connection", function(socket) {
+    socket.emit("messageToClient", "Srv connected, board OK");
+
+    setInterval(sendValues, 40, socket); 
+    
+}); 
+
+}); 
+
+function controlAlgorithm () {
+    pwm = factor*(desiredValue-actualValue);
+    if (pwm > 255) {pwm =  255}; 
+    if (pwm < -255) {pwm = -255}; 
+    if (pwm > 0) {board.digitalWrite(9,1)}; board.digitalWrite(4,0);}; 
+    if (pwm < 0) {board.digitalWrite(9,0)}; board.digitalWrite(4,1);};
+    board.analogWrite(3, Math.abs(pwm));
+};
+
+function startControlAlgorithm () {
+    setInterval(function(){controlAlgorithm();}, 30); 
+    console.log("Control algorithm has been started.");
+};
+
+function sendValues (socket) {
+    socket.emit("clientReadValues",
+    {
+    "desiredValue": desiredValue,
+    "actualValue": actualValue
+    });
+};
+

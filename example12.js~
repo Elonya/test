@@ -10,7 +10,7 @@ console.log("Starting the code");
 
 var board = new firmata.Board("/dev/ttyACM0", function(){
     console.log("Connecting to Arduino");
-    board.pinMode(1, board.MODES.OUTPUT); 
+    board.pinMode(2, board.MODES.OUTPUT); 
     board.pinMode(3, board.MODES.PWM); 
    
     
@@ -45,13 +45,13 @@ io.sockets.on("connection", function(socket) {
     });
     
     socket.on("left", function(value){
-       board.digitalWrite(9,1); 
+       board.digitalWrite(2, value.AIN1); 
       
        socket.emit("messageToClient", "Direction; left");
     });
     
     socket.on("right", function(value){
-       board.digitalWrite(9, 0); 
+       board.digitalWrite(2, value.AIN1); 
       
        socket.emit("messageToClient", "Direction; right");
     });
