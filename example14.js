@@ -35,7 +35,7 @@ function handler(req, res) {
 var desiredValue = 0;
 var actualValue = 0; 
 
-var factor = 0.3; 
+var factor = 0.1; 
 var pwm = 0; 
 
 var controlAlgorithmStartedFlag = 0; 
