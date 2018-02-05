@@ -32,6 +32,7 @@ Kd: <input id="Kd1" value="0.25" size = "5" />
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 
 <script type="text/javascript">
+
 var potValue1 = 0;  
 var potValue2 = 0;  
 var x1 = new Array();  
@@ -55,10 +56,12 @@ function load() {
         y2[i] = 0;  
     };
 };
+
 var divForPrint = document.getElementById("divForPrint");
  
 var numberOfLinesInLog = 20;  
-var counterOfLogs = 0;  
+var counterOfLogs = 0; 
+ 
 function log(msg) {  
     var node=document.createElement("tr");  
     var textnode=document.createTextNode(counterOfLogs + " | " + msg);  

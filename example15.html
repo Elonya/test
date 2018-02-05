@@ -31,6 +31,9 @@ var x2 = new Array();
 var y2 = new Array(); 
 var canvas1;
 var ctx1;
+
+
+
 function load() { 
     canvas1 = document.getElementById("canvas1");
     ctx1 = canvas1.getContext("2d");
@@ -48,9 +51,10 @@ function load() {
     };
 };
 var divForPrint = document.getElementById("divForPrint");
-
 var numberOfLinesInLog = 20; 
 var counterOfLogs = 0; 
+
+
 function log(msg) { 
     var node=document.createElement("tr"); 
     var textnode=document.createTextNode(counterOfLogs + " | " + msg); 
@@ -62,10 +66,13 @@ function log(msg) {
     }
     counterOfLogs = counterOfLogs + 1; 
 }
+
+
 var socket = io.connect("192.168.1.102:8080"); 
 socket.on("messageToClient", function (msg){
     log(msg); 
 });
+
 socket.on("clientReadValues", function(value) {
     potValue1 = value.desiredValue;
     potValue2 = value.actualValue;

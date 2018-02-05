@@ -38,6 +38,8 @@ var actualValue = 0;
 var Kp = 0.55; // proportional factor
 var Ki = 0.008; // integral factor
 var Kd = 0.15; // differential factor
+
+var factor = 0.1;
 var pwm = 0;
 var pwmLimit = 254;
 
