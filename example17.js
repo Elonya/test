@@ -1,6 +1,6 @@
-var http = require("http").createServer(handler); 
+var http = require("http").createServer(handler);  
 var io = require("socket.io").listen(http); 
-var fs = require("fs"); 
+var fs = require("fs");  
 var firmata = require("firmata");
 
 console.log("Starting the code");
@@ -11,6 +11,7 @@ var board = new firmata.Board("/dev/ttyACM0", function(){
     board.pinMode(1, board.MODES.ANALOG); 
     board.pinMode(9, board.MODES.OUTPUT);  
     board.pinMode(3, board.MODES.PWM);  
+   
 });
 
 function handler(req, res) {
@@ -25,41 +26,40 @@ function handler(req, res) {
     })
 }
 
-var desiredValue = 0; 
-var actualValue = 0; 
+var desiredValue = 0;  
+var actualValue = 0;  
 
-var Kp = 0.55; 
-var Ki = 0.008; 
-var Kd = 0.15; 
-
+var Kp = 0.55;  
+var Ki = 0.008;  
+var Kd = 0.15;  
 
 var factor = 0.3; 
-var pwm = 0; 
-var pwmLimit = 254; 
+var pwm = 0;  
+var pwmLimit = 254;  
 
-var err = 0; 
-var errSum = 0; 
-var dErr = 0; 
-var lastErr = 0; 
+var err = 0;  
+var errSum = 0;  
+var dErr = 0;  
+var lastErr = 0;  
 
-var controlAlgorithmStartedFlag = 0; 
-var intervalCtrl; 
+var controlAlgorithmStartedFlag = 0;  
+var intervalCtrl;  
 
 
 
-http.listen(8080); 
+http.listen(8080);  
 
-var sendValueViaSocket = function(){}; 
+var sendValueViaSocket = function(){};  
 var sendStaticMsgViaSocket = function(){}; 
 
 board.on("ready", function(){
     
 board.analogRead(0, function(value){
-    desiredValue = value; 
+    desiredValue = value;  
 });
 
 board.analogRead(1, function(value){
-    actualValue = value; 
+    actualValue = value;  
 });
 
 io.sockets.on("connection", function(socket) {
@@ -67,7 +67,7 @@ io.sockets.on("connection", function(socket) {
     socket.emit("staticMsgToClient", "Srv connected, board OK");
     
 
-    setInterval(sendValues, 40, socket); 
+    setInterval(sendValues, 40, socket);  
     
     socket.on("startControlAlgorithm", function(numberOfControlAlgorithm){
        startControlAlgorithm(numberOfControlAlgorithm); 
@@ -85,42 +85,29 @@ io.sockets.on("connection", function(socket) {
         io.sockets.emit("staticMsgToClient", value);  
     };
     
-}); 
+});  
 
-}); 
+});  
 
 function controlAlgorithm (parameters) {
     if (parameters.ctrlAlgNo == 1) {
         pwm = parameters.pCoeff*(desiredValue-actualValue);
-        if (pwm > pwmLimit) {pwm =  pwmLimit}; 
-        if (pwm < -pwmLimit) {pwm = -pwmLimit}; 
-        if (pwm > 0) {board.digitalWrite(2,1); board.digitalWrite(4,0);}; 
-        if (pwm < 0) {board.digitalWrite(2,0); board.digitalWrite(4,1);}; 
+        if (pwm > pwmLimit) {pwm =  pwmLimit};  
+        if (pwm < -pwmLimit) {pwm = -pwmLimit};  
+        if (pwm > 0) {board.digitalWrite(9,1)};  
+        if (pwm < 0) {board.digitalWrite(9,0)};  
         board.analogWrite(3, Math.abs(pwm));
     }
     if (parameters.ctrlAlgNo == 2) {
-        err = desiredValue - actualValue; 
-        errSum += err; 
-        dErr = err - lastErr; 
-        pwm = parameters.Kp1*err+parameters.Ki1*errSum+parameters.Kd1*dErr; 
-        lastErr = err; 
-        if (pwm > pwmLimit) {pwm =  pwmLimit}; 
-        if (pwm < -pwmLimit) {pwm = -pwmLimit}; 
-        if (pwm > 0) {board.digitalWrite(2,1); board.digitalWrite(4,0);}; 
-        if (pwm < 0) {board.digitalWrite(2,0); board.digitalWrite(4,1);}; 
-        board.analogWrite(3, Math.abs(pwm));        
-    }
-    if (parameters.ctrlAlgNo == 3) {
-        err = desiredValue - actualValue; 
-        errSum += err; 
-        dErr = err - lastErr; 
-        pwm = parameters.Kp2*err+parameters.Ki2*errSum+parameters.Kd2*dErr; 
-        console.log(parameters.Kp2 + "|" + parameters.Ki2 + "|" + parameters.Kd2);
-        lastErr = err; 
-        if (pwm > pwmLimit) {pwm =  pwmLimit}; 
-        if (pwm < -pwmLimit) {pwm = -pwmLimit}; 
-        if (pwm > 0) {board.digitalWrite(2,1); board.digitalWrite(4,0);}; 
-        if (pwm < 0) {board.digitalWrite(2,0); board.digitalWrite(4,1);}; 
+        err = desiredValue - actualValue;  
+        errSum += err;  
+        dErr = err - lastErr;  
+        pwm = parameters.Kp1*err+parameters.Ki1*errSum+parameters.Kd1*dErr;  
+        lastErr = err;  
+        if (pwm > pwmLimit) {pwm =  pwmLimit};  
+        if (pwm < -pwmLimit) {pwm = -pwmLimit};  
+        if (pwm > 0) {board.digitalWrite(9,1)}; 
+        if (pwm < 0) {board.digitalWrite(9,0)}; 
         board.analogWrite(3, Math.abs(pwm));        
     }
     
@@ -140,14 +127,6 @@ function startControlAlgorithm (parameters) {
 function stopControlAlgorithm () {
     clearInterval(intervalCtrl); 
     board.analogWrite(3, 0);
-    err = 0; 
-    errSum = 0; 
-    dErr = 0;
-    lastErr = 0; 
-    pwm = 0;
-    
-    
-    
     controlAlgorithmStartedFlag = 0;
     console.log("Control algorithm has been stopped.");
     sendStaticMsgViaSocket("Stopped.")
@@ -181,3 +160,4 @@ function json2txt(obj)
   recurse(obj);
   return txt;
 }
+

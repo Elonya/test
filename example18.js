@@ -15,7 +15,7 @@ var board = new firmata.Board("/dev/ttyACM0", function(){
 });
 
 function handler(req, res) {
-    fs.readFile(__dirname + "/example16.html",
+    fs.readFile(__dirname + "/example18.html",
     function (err, data) {
         if (err) {
             res.writeHead(500, {"Content-Type": "text/plain"});
@@ -109,6 +109,19 @@ function controlAlgorithm (parameters) {
         if (pwm > 0) {board.digitalWrite(9,1)}; 
         if (pwm < 0) {board.digitalWrite(9,0)}; 
         board.analogWrite(3, Math.abs(pwm));        
+     }
+    if (parameters.ctrlAlgNo == 3) {
+        err = desiredValue - actualValue; 
+        errSum += err; 
+        dErr = err - lastErr; 
+        pwm = parameters.Kp2*err+parameters.Ki2*errSum+parameters.Kd2*dErr; 
+        console.log(parameters.Kp2 + "|" + parameters.Ki2 + "|" + parameters.Kd2);
+        lastErr = err; 
+        if (pwm > pwmLimit) {pwm =  pwmLimit}; 
+        if (pwm < -pwmLimit) {pwm = -pwmLimit}; 
+        if (pwm > 0) {board.digitalWrite(9,1); 
+        if (pwm < 0) {board.digitalWrite(9,0);
+        board.analogWrite(3, Math.abs(pwm));        
     }
     
 
@@ -127,6 +140,12 @@ function startControlAlgorithm (parameters) {
 function stopControlAlgorithm () {
     clearInterval(intervalCtrl); 
     board.analogWrite(3, 0);
+    err = 0; // error as difference between desired and actual val.
+    errSum = 0; // sum of errors | like integral
+    dErr = 0;
+    lastErr = 0; // difference
+    pwm = 0;
+
     controlAlgorithmStartedFlag = 0;
     console.log("Control algorithm has been stopped.");
     sendStaticMsgViaSocket("Stopped.")
@@ -138,6 +157,9 @@ function sendValues (socket) {
     "desiredValue": desiredValue,
     "actualValue": actualValue,
     "pwm": pwm
+    "err": err,
+    "errSum": errSum,
+    "dErr": dErr
     });
 };
 
@@ -160,4 +182,3 @@ function json2txt(obj)
   recurse(obj);
   return txt;
 }
-
