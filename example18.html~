@@ -47,43 +47,43 @@ Kd: <input id="Kd1" value="0.25" size = "5" />
 
 var potValue1 = 0; 
 var potValue2 = 0; 
-var graph1; 
-var graph2; 
-var graph3; 
-var graph4; 
-var graph5; 
-var graph6; 
+var graph1; // variable for graph object
+var graph2; // variable for graph object
+var graph3; // variable for graph object
+var graph4; // variable for graph object
+var graph5; // variable for graph object
+var graph6; // variable for graph object
     
 var performanceMeasure = 0;
 var intervalPulseFunction;
-var divPrint1; 
+var divPrint1; // variable for div object
 
 var pwm;
 
   class LogDiv {
     constructor(divId, numberOfLinesBeforeScroll) {
-        this.divElement = document.getElementById(divId); 
-        this.numberOfLinesBeforeScroll = numberOfLinesBeforeScroll; 
+        this.divElement = document.getElementById(divId); // name of div where values will be printed
+        this.numberOfLinesBeforeScroll = numberOfLinesBeforeScroll; // number of lines which print before scroll
         this.linesPrintCounter = 0;
     }
-    log(msg) { 
-        var node=document.createElement("tr"); 
-        var textnode=document.createTextNode(this.linesPrintCounter + " | " + msg); 
-        node.appendChild(textnode); 
-        this.divElement.insertBefore(node, this.divElement.childNodes[0]); 
-        if (this.linesPrintCounter > this.numberOfLinesBeforeScroll-1) { 
-            this.divElement.removeChild(this.divElement.childNodes[this.numberOfLinesBeforeScroll], this.divElement.childNodes[this.numberOfLinesBeforeScroll]); 
+    log(msg) { // function for printout of the messages with scroll functionality
+        var node=document.createElement("tr"); // we create the variable node as the a table row (table row)
+        var textnode=document.createTextNode(this.linesPrintCounter + " | " + msg); // we create element with the text
+        node.appendChild(textnode); // adding text to "node", t.j. vrstici tabele
+        this.divElement.insertBefore(node, this.divElement.childNodes[0]); // inserting into variable node
+        if (this.linesPrintCounter > this.numberOfLinesBeforeScroll-1) { // if the lines are more than limit -> start with scroll
+            this.divElement.removeChild(this.divElement.childNodes[this.numberOfLinesBeforeScroll], this.divElement.childNodes[this.numberOfLinesBeforeScroll]); // we remove the oldest printout
         }
-        this.linesPrintCounter++; 
+        this.linesPrintCounter++; // increasing the number of printouts
     } 
     
 }
     
 class Graph {
-    constructor(canvasId, minGraphX, maxGraphX, minGraphY, maxGraphY, color, legend, axisDescription) { 
+    constructor(canvasId, minGraphX, maxGraphX, minGraphY, maxGraphY, color, legend, axisDescription) { // pri konstruktorju moramo podati ID platna, ki ga sicer ustvarimo v html-ju
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
-        this.canvasWidth = this.canvas.width; 
+        this.canvasWidth = this.canvas.width; // mind capital W at Width
         this.canvasHeight = this.canvas.height; // mind capital H at Height
         this.x = new Array(); // create new Array x
         this.y = new Array();
@@ -168,15 +168,15 @@ function load() { // function that is started, when we open the page
     graph6 = new Graph("canvas6", 0, 200, -150, 150, ["red"], ["dError/dt"], ["0", "200", "-150", "150"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
 };
 var divForPrint = document.getElementById("divForPrint");
-
-var numberOfLinesInLog = 20; 
-var counterOfLogs = 0; 
-var socket = io.connect("192.168.1.102:8080"); 
+// var for printing messages
+var numberOfLinesInLog = 20; // variable for the number of lines in log div
+var counterOfLogs = 0; // variable for counting the logs
+var socket = io.connect("172.16.22.248:8080"); // connect via socket
 socket.on("messageToClient", function (msg){
-    divPrint1.log(msg); 
+    divPrint1.log(msg); // add msg to div
 });
-socket.on("staticMsgToClient", function(msg) { 
-    document.getElementById("divForStaticPrint").innerHTML = "Status: " + msg; 
+socket.on("staticMsgToClient", function(msg) { // when we recive static message
+    document.getElementById("divForStaticPrint").innerHTML = "Status: " + msg; // we print to div
 });
 socket.on("clientReadValues", function(value) {
     potValue1 = value.desiredValue;
@@ -185,7 +185,7 @@ socket.on("clientReadValues", function(value) {
     graph1.plot([potValue1, potValue2]); // desired Vs actual graph
     
     graph2.plot([pwm]);
-    
+    // draw centerline in graph2
     graph2.ctx.strokeStyle = "#add8e6";
     graph2.ctx.beginPath(); // draw centerline at 0
     graph2.ctx.lineTo(0, 50); // starting point
@@ -210,7 +210,7 @@ function startControlAlgorithm2() {
     var Kp1 = document.getElementById("Kp1").value; // read the value of coeff from input field
     var Ki1 = document.getElementById("Ki1").value; // read the value of coeff from input field
     var Kd1 = document.getElementById("Kd1").value; // read the value of coeff from input field
-    socket.emit("startControlAlgorithm", {"ctrlAlgNo": 2, "Kp1": Kp1, "Ki1": Ki1, "Kd1": Kd1}); 
+    socket.emit("startControlAlgorithm", {"ctrlAlgNo": 2, "Kp1": Kp1, "Ki1": Ki1, "Kd1": Kd1}); // send value of coeff
 }
     function stop () {
         document.getElementById("divForStaticPrint").innerHTML = document.getElementById("divForStaticPrint").innerHTML + " | C = " + performanceMeasure;

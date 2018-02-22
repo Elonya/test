@@ -156,16 +156,16 @@ class Graph {
 }
 function load() { // function that is started, when we open the page
     
-    // create divPrint1 object to output the numbers
-    divPrint1 = new LogDiv("print1", 10); // as the argument at the creation of the new object we declare the div name into which the printout of the log will be performed and the number of lines before the scroll
     
-    // create graph1 ~ graph6 objects for displaying the graphs
-    graph1 = new Graph("canvas1", 0, 200, 0, 1023, ["red", "green"], ["Desired", "Actual"], ["0", "200", "0", "1023"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
-    graph2 = new Graph("canvas2", 0, 200, -255, 255, ["red"], ["PWM"], ["0", "200", "-255", "255"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
-    graph3 = new Graph("canvas3", 0, 200, -100, 100, ["red"], ["x"], ["0", "200", "-100", "100"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
-    graph4 = new Graph("canvas4", 0, 200, -1023, 1023, ["red"], ["Error"], ["0", "200", "-1023", "1023"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
-    graph5 = new Graph("canvas5", 0, 200, -10000, 10000, ["red"], ["Integ(Err*dt)"], ["0", "200", "-10000", "10000"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
-    graph6 = new Graph("canvas6", 0, 200, -150, 150, ["red"], ["dError/dt"], ["0", "200", "-150", "150"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of yValue matrix (if we state one color as eg. ["red"], we assume only one time series, ["red", "green", "blue"] -> three time series) 
+    divPrint1 = new LogDiv("print1", 10); 
+    
+   
+    graph1 = new Graph("canvas1", 0, 200, 0, 1023, ["red", "green"], ["Desired", "Actual"], ["0", "200", "0", "1023"]);  
+    graph2 = new Graph("canvas2", 0, 200, -255, 255, ["red"], ["PWM"], ["0", "200", "-255", "255"]); 
+    graph3 = new Graph("canvas3", 0, 200, -100, 100, ["red", "green", "blue"], ["KpE", "KiIedt", "KdDe_dt"], ["0", "200", "-100", "100"]); 
+    graph4 = new Graph("canvas4", 0, 200, -1023, 1023, ["red"], ["Error"], ["0", "200", "-1023", "1023"]);
+    graph5 = new Graph("canvas5", 0, 200, -10000, 10000, ["red"], ["Integ(Err*dt)"], ["0", "200", "-10000", "10000"]);  
+    graph6 = new Graph("canvas6", 0, 200, -150, 150, ["red"], ["dError/dt"], ["0", "200", "-150", "150"]); 
 };
 var divForPrint = document.getElementById("divForPrint");
 
@@ -192,7 +192,7 @@ socket.on("clientReadValues", function(value) {
     graph2.ctx.lineTo(200, 50); // ending point
     graph2.ctx.stroke();
     
-    
+    graph3.plot([value.KpE, value.KiIedt, value.KdDe_dt]);
     
     graph4.plot([value.err]); // graph for P part
     graph5.plot([value.errSum]); // graph for I part

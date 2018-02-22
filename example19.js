@@ -15,7 +15,7 @@ var board = new firmata.Board("/dev/ttyACM0", function(){
 });
 
 function handler(req, res) {
-    fs.readFile(__dirname + "/example18.html",
+    fs.readFile(__dirname + "/example19.html",
     function (err, data) {
         if (err) {
             res.writeHead(500, {"Content-Type": "text/plain"});
@@ -40,7 +40,10 @@ var pwmLimit = 254;
 var err = 0;  
 var errSum = 0;  
 var dErr = 0;  
-var lastErr = 0;  
+var lastErr = 0; 
+var KpE = 0; // multiplication of Kp x error
+var KiIedt = 0; // multiplication of Ki x integ. of error
+var KdDe_dt = 0; // multiplication of Kd x differential of err. 
 
 var controlAlgorithmStartedFlag = 0;  
 var intervalCtrl;  
@@ -101,8 +104,14 @@ function controlAlgorithm (parameters) {
     if (parameters.ctrlAlgNo == 2) {
         err = desiredValue - actualValue;  
         errSum += err;  
-        dErr = err - lastErr;  
-        pwm = parameters.Kp1*err+parameters.Ki1*errSum+parameters.Kd1*dErr;  
+        dErr = err - lastErr; 
+// we will put parts of expression for pwm to
+// global workspace
+        KpE = parameters.Kp1*err;
+        KiIedt = parameters.Ki1*errSum;
+        KdDe_dt = parameters.Kd1*dErr;
+        pwm = KpE + KiIedt + KdDe_dt; // we use above parts 
+          
         lastErr = err;  
         if (pwm > pwmLimit) {pwm =  pwmLimit};  
         if (pwm < -pwmLimit) {pwm = -pwmLimit};  
@@ -114,7 +123,13 @@ function controlAlgorithm (parameters) {
         err = desiredValue - actualValue; 
         errSum += err; 
         dErr = err - lastErr; 
-        pwm = parameters.Kp2*err+parameters.Ki2*errSum+parameters.Kd2*dErr; 
+// we will put parts of expression for pwm to
+// global workspace
+        KpE = parameters.Kp2*err;
+        KiIedt = parameters.Ki2*errSum;
+        KdDe_dt = parameters.Kd2*dErr;
+        pwm = KpE + KiIedt + KdDe_dt; // we use above parts
+        
         console.log(parameters.Kp2 + "|" + parameters.Ki2 + "|" + parameters.Kd2);
         lastErr = err; 
         if (pwm > pwmLimit) {pwm =  pwmLimit}; 
@@ -159,7 +174,10 @@ function sendValues (socket) {
     "pwm": pwm,
     "err": err,
     "errSum": errSum,
-    "dErr": dErr
+    "dErr": dErr,
+    "KpE": KpE,
+    "KiIedt": KiIedt,
+    "KdDe_dt": KdDe_dt
     });
 };
 
