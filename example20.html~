@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<meta charset = utf8>
+<html>
+
+<head>
+    <title>Example with potentiometer</title>
+</head>
+
+<body onload="load();">
+    
+<div>
+<canvas id="canvas1" width ="200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+<canvas id="canvas4" width = "200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+<canvas id="canvas7" width = "200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+<br>
+<canvas id="canvas2" width ="200" height = "100" style="border: 1px dashed #00c3c3;"></canvas> 
+<canvas id="canvas5" width = "200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+ <br>
+<canvas id="canvas3" width = "200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+<canvas id="canvas6" width = "200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>
+<p></p>   
+</div>
+<p></p>
+
+pCoeff: <input id="pCoeff" value="0.1" size="5" />
+<button id="buttonStartControlAlgorithm1" onClick="startControlAlgorithm1();">Start Ctrl Alg1</button>
+<button id="buttonStopControlAlgorithm" onClick="stopControlAlgorithm();">Stop Ctrl Alg</button>
+<p></p>
+Kp: <input id="Kp1" value="0.15" size = "5" />
+Ki: <input id="Ki1" value="0.0055" size = "5" />
+Kd: <input id="Kd1" value="0.25" size = "5" />
+<button id="buttonStartControlAlgorithm2" onClick="startControlAlgorithm2();">Start Ctrl Alg2</button>
+<button id="buttonStopControlAlgorithm" onClick="stopControlAlgorithm();">Stop Ctrl Alg</button>
+<p></p>
+
+
+<div id="divForStaticPrint"> </div>
+<p></p>
+
+<div id="print1"></div>
+
+<br>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+
+
+var potValue1 = 0; 
+var potValue2 = 0; 
+var graph1; 
+var graph2; 
+var graph3; 
+var graph4; 
+var graph5; 
+var graph6; 
+var graph7; // variable for graph object
+
+    
+var performanceMeasure = 0;
+var intervalPulseFunction;
+var divPrint1; 
+
+var pwm;
+
+  class LogDiv {
+    constructor(divId, numberOfLinesBeforeScroll) {
+        this.divElement = document.getElementById(divId); 
+        this.numberOfLinesBeforeScroll = numberOfLinesBeforeScroll; 
+        this.linesPrintCounter = 0;
+    }
+    log(msg) { 
+        var node=document.createElement("tr"); 
+        var textnode=document.createTextNode(this.linesPrintCounter + " | " + msg); 
+        node.appendChild(textnode); 
+        this.divElement.insertBefore(node, this.divElement.childNodes[0]); 
+        if (this.linesPrintCounter > this.numberOfLinesBeforeScroll-1) { 
+            this.divElement.removeChild(this.divElement.childNodes[this.numberOfLinesBeforeScroll], this.divElement.childNodes[this.numberOfLinesBeforeScroll]); 
+        }
+        this.linesPrintCounter++; 
+    } 
+    
+}
+    
+class Graph {
+    constructor(canvasId, minGraphX, maxGraphX, minGraphY, maxGraphY, color, legend, axisDescription) { 
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext("2d");
+        this.canvasWidth = this.canvas.width; 
+        this.canvasHeight = this.canvas.height; // mind capital H at Height
+        this.x = new Array(); // create new Array x
+        this.y = new Array();
+        this.rangeX = maxGraphX - minGraphX;
+        this.rangeY = maxGraphY - minGraphY;
+        
+        // create y array (size) according to the color vector (could have multiple rows i.e. 2d)
+        for( var i=0; i<color.length; i++ ) {
+            this.y.push([]); // example of three row array init. would be: this.y = [[],[],[]];
+        }
+        this.minGraphX = minGraphX;
+        this.maxGraphX = maxGraphX;
+        this.minGraphY = minGraphY;
+        this.maxGraphY = maxGraphY;
+        this.color = color; // color of the graph
+        
+        this.legend = legend;
+        this.axisDescription = axisDescription;
+        
+        // fill x vector; vector y is filled in real-time
+        for (var i=0; i<this.maxGraphX+1; i++) {
+            this.x[i] = i; // values for the x coordinate; 0, 1, 2, ...
+        }
+    }
+    
+    addValueOrCutAndAdd(yValue) {
+        if (this.y[0].length == this.maxGraphX+1) { // if canvas size is 10x10 we have 11x11 points (starting with 0 and ending with 10)
+            for (var i = 0; i < yValue.length; i++) { // v zanki gremo po polju yInput in na mestu 0 eno vrednost odrežemo, na koncu pa eno mesto dodamo - zapišemo novo vrednost yInput
+                this.y[i].splice(0, 1); // on the position 0 in the vector y we cut one value
+                this.y[i][this.maxGraphX] = yValue[i]; // at the end of the array the new value is added
+            }
+        }
+        else {
+            for (var i = 0; i < yValue.length; i++) { // z zanko gremo po vseh vrsticah za matrike y
+                this.y[i].push(yValue[i]); // if the array is not yet full, we push the new value in the array / vrednost v oklepaju [] t.j. index je za ena večji; npr., če imamo eno vrednost je indeks [0], length pa 1
+            }
+        }
+    }
+    
+    plot(yValue) {
+        this.addValueOrCutAndAdd(yValue);
+        this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight); // clear the canvas
+        
+        for (var i=0; i < yValue.length; i++) { // zanka, ki gre po vrsticah y matrike
+        this.ctx.strokeStyle = this.color[i]; // determine color
+        this.ctx.beginPath(); // for the start of the line
+            for (var j=0; j<this.y[0].length; j++) {
+                this.ctx.lineTo(this.x[j]/this.rangeX*this.canvasWidth, (this.canvasHeight - ((this.y[i][j]-this.minGraphY)/this.rangeY) * this.canvasHeight)); // for y values we multiply with canas height, eg. 0.25 * 100 = 25
+            }
+        this.ctx.stroke();
+        }
+        
+        // add legend
+        for( var i=0; i<this.legend.length; i++ ) { // legend and color should be of the same size
+            this.ctx.font = "11px Arial";
+            this.ctx.fillText(this.legend[i], 49+i*54, 10);
+            this.ctx.strokeStyle = this.color[i];
+            this.ctx.beginPath(); // beginning of the short line for the legend
+            this.ctx.lineTo(37+i*54, 6);
+            this.ctx.lineTo(46+i*54, 6);
+            this.ctx.stroke();
+        }
+        
+        // add axis descritions
+        this.ctx.fillText("<-" + this.axisDescription[0] + "|" + this.axisDescription[1] + "->", 150, 95)
+        this.ctx.fillText(this.axisDescription[2], 5, 95);
+        this.ctx.fillText(this.axisDescription[3], 5, 11);
+        
+    }
+}
+function load() { // function that is started, when we open the page
+    
+    
+    divPrint1 = new LogDiv("print1", 10); 
+    
+   
+    graph1 = new Graph("canvas1", 0, 200, 0, 1023, ["red", "green"], ["Desired", "Actual"], ["0", "200", "0", "1023"]);  
+    graph2 = new Graph("canvas2", 0, 200, -255, 255, ["red"], ["PWM"], ["0", "200", "-255", "255"]); 
+    graph3 = new Graph("canvas3", 0, 200, -100, 100, ["red", "green", "blue"], ["KpE", "KiIedt", "KdDe_dt"], ["0", "200", "-100", "100"]); 
+    graph4 = new Graph("canvas4", 0, 200, -1023, 1023, ["red"], ["Error"], ["0", "200", "-1023", "1023"]);
+    graph5 = new Graph("canvas5", 0, 200, -10000, 10000, ["red"], ["Integ(Err*dt)"], ["0", "200", "-10000", "10000"]);  
+    graph6 = new Graph("canvas6", 0, 200, -150, 150, ["red"], ["dError/dt"], ["0", "200", "-150", "150"]); 
+    graph7 = new Graph("canvas7", 0, 2000, 0, 500000, ["red"], ["Int(Abs(Error)dt)"], ["0", "2000", "0", "0.5M"]); // arguments: Arg1: canvasId, Arg2: maxX, Arg3: maxY, Arg4: [vector of colors]; this determines the size of
+};
+
+var divForPrint = document.getElementById("divForPrint");
+
+var numberOfLinesInLog = 20; 
+var counterOfLogs = 0; 
+var socket = io.connect("192.168.1.102:8080"); 
+socket.on("messageToClient", function (msg){
+    divPrint1.log(msg); 
+});
+socket.on("staticMsgToClient", function(msg) { 
+    document.getElementById("divForStaticPrint").innerHTML = "Status: " + msg; 
+});
+socket.on("clientReadValues", function(value) {
+    potValue1 = value.desiredValue;
+    potValue2 = value.actualValue;
+    pwm = parseInt((value.pwm).toFixed(0), 10);
+    graph1.plot([potValue1, potValue2]); // desired Vs actual graph
+    
+    graph2.plot([pwm]);
+    
+    graph2.ctx.strokeStyle = "#add8e6";
+    graph2.ctx.beginPath(); // draw centerline at 0
+    graph2.ctx.lineTo(0, 50); // starting point
+    graph2.ctx.lineTo(200, 50); // ending point
+    graph2.ctx.stroke();
+    
+    graph3.plot([value.KpE, value.KiIedt, value.KdDe_dt]);
+    
+    graph4.plot([value.err]); // graph for P part
+    graph5.plot([value.errSum]); // graph for I part
+    graph6.plot([value.dErr]); // graph for D part
+    graph7.plot([value.errSumAbs]); // graph for performance measure
+    graph7.ctx.fillText(parseInt(value.errSumAbs),70,27);
+
+    divPrint1.log(value.desiredValue + "|" + value.actualValue + "|" + (value.desiredValue-value.actualValue) + "|" + (value.pwm).toFixed(0));
+});
+function startControlAlgorithm1() {
+    stopControlAlgorithm(); 
+    var pCoeff = document.getElementById("pCoeff").value; 
+    socket.emit("startControlAlgorithm", {"ctrlAlgNo": 1, "pCoeff": pCoeff}); 
+}
+function startControlAlgorithm2() {
+    stopControlAlgorithm(); 
+    var Kp1 = document.getElementById("Kp1").value; // read the value of coeff from input field
+    var Ki1 = document.getElementById("Ki1").value; // read the value of coeff from input field
+    var Kd1 = document.getElementById("Kd1").value; // read the value of coeff from input field
+    socket.emit("startControlAlgorithm", {"ctrlAlgNo": 2, "Kp1": Kp1, "Ki1": Ki1, "Kd1": Kd1}); 
+}
+    function stop () {
+        document.getElementById("divForStaticPrint").innerHTML = document.getElementById("divForStaticPrint").innerHTML + " | C = " + performanceMeasure;
+        clearInterval(intervalPulseFunction);
+    }
+function stopControlAlgorithm() {
+    socket.emit("stopControlAlgorithm");
+}
+socket.on("disconnect", function(){
+    divPrint1.log("Disconnected from the server"); 
+});
+    
+</script>
+    
+</body>
+    
+</html>
