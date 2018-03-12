@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset="utf-8">
+
+
+
+<html>
+<head>
+<title> Arrow01 </title>    
+</head>
+    
+<body>
+Arrow
+<br>
+<canvas id="cv1" width="500" height="250" style="border:1px dashed #00c3c3"></canvas>
+
+<script type="text/javascript">
+"use strict"; 
+    
+var canvas, ctx; 
+var x = 250;
+var step = 1;
+  
+canvas = document.getElementById("cv1");
+ctx = canvas.getContext("2d");
+
+ctx.fillStyle = "#ff0000";
+function loop() {
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    if (x > 490) {
+        step = -step; 
+    }
+    if (x < 0) {
+        step = -step; 
+    }
+    
+    x = x + step; 
+    
+    ctx.fillRect(x, 70, 3, 150); 
+    
+    setTimeout(loop, 5); 
+}
+    
+loop(); 
+    
+</script>
+
+
+</body>    
+    
+</html>
