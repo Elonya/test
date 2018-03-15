@@ -28,18 +28,18 @@ ctx.lineWidth = 5
 function loop() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    if (x > 470) {
+    if (x > 350) {
         step = -step; 
     }
-    if (x < 0) {
+    if (x < 50) {
         step = -step; 
     }
     
     x = x + step; 
     
     ctx.beginPath(); 
-    ctx.lineTo(230,200);
-    ctx.lineTo(x,60);
+    ctx.lineTo(200,200);
+    ctx.lineTo(x,128-128*Math.cos(Math.abs((200-x)/128)));
     ctx.stroke ();  
     
     setTimeout(loop, 5); 
