@@ -23,11 +23,12 @@ var step = 1;
 canvas = document.getElementById("cv1");
 ctx = canvas.getContext("2d");
 
-ctx.fillStyle = "#ff0000";
+ctx.strokeStyle = "#ff0000";
+ctx.lineWidth = 5
 function loop() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    if (x > 490) {
+    if (x > 470) {
         step = -step; 
     }
     if (x < 0) {
@@ -36,7 +37,10 @@ function loop() {
     
     x = x + step; 
     
-    ctx.fillRect(x, 70, 3, 150); 
+    ctx.beginPath(); 
+    ctx.lineTo(230,200);
+    ctx.lineTo(x,60);
+    ctx.stroke ();  
     
     setTimeout(loop, 5); 
 }
