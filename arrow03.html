@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    <title>Example 10</title>
+    <title>Arrow03</title>
 </head>
 
 <body onload="load()";>
@@ -23,12 +23,17 @@
 var divElement = document.getElementById("print1"); 
 var numberOfLinesBeforeScroll = 10;
 var linesPrintCounter = 0;
-var potValue1 = 0; 
+var potValue1 = 0;
+var potValue2 = 0;  
 var x1 = new Array(); 
 var y1 = new Array();
+var x2 = new Array(); 
+var y2 = new Array(); 
 var canvas1;
-var ctx1;    
+var ctx1;   
 var I;
+
+
 
 function log(msg) {
     var node=document.createElement("tr"); 
@@ -44,14 +49,21 @@ function log(msg) {
 function load() { 
     canvas1 = document.getElementById("canvas1");
     ctx1 = canvas1.getContext("2d");
-    ctx1.lineWidth = "1";
-    ctx1.strokeStyle = "#ff0000";
+    
     
     for (var i=0; i<200; i++) {
         x1[i] = i; 
         y1[i] = 0; 
     };
+
+
+    for (var i=0; i<200; i++) {
+        x2[i] = i; 
+        y2[i] = 0; 
+    };
+
 };
+
 var socket = io.connect("192.168.1.102:8080"); 
 socket.on("messageToClient", function (msg) {
     log(msg); 
@@ -59,16 +71,28 @@ socket.on("messageToClient", function (msg) {
     
 socket.on("clientReadValues", function(value) {
     potValue1 = value.desiredValue;
+    potValue2 = value.actualValue;
     
-    
+    ctx1.lineWidth = "3";
+    ctx1.strokeStyle = "#ff0000";
     ctx1.clearRect(0, 0, canvas1.width, canvas1.height); 
     I = potValue1/180*Math.PI
     ctx1.beginPath();
     ctx1.lineTo(150,150); 
     ctx1.lineTo(100*Math.cos(I)+150,100*Math.sin(I)+150);
     ctx1.stroke();
+
+
+    ctx1.lineWidth = "1";
+    ctx1.strokeStyle = "#00ff00";
+    ctx1.clearRect(0, 0, canvas1.width, canvas1.height); 
+    I = potValue2/180*Math.PI
+    ctx1.beginPath();
+    ctx1.lineTo(150,150); 
+    ctx1.lineTo(100*Math.cos(I)+150,100*Math.sin(I)+150);
+    ctx1.stroke();
     
-    log(value.desiredValue);
+    log(potValue1 + "|" + potValue2);
 });
 </script>
     

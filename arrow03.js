@@ -1,0 +1,57 @@
+var http = require("http").createServer(handler); 
+var io = require("socket.io").listen(http); 
+var fs = require("fs"); 
+var firmata = require("firmata");
+
+console.log("Starting the code");
+
+var board = new firmata.Board("/dev/ttyACM0", function(){
+    console.log("Connecting to Arduino");
+    console.log("Enabling analog pin 0");
+    board.pinMode(0, board.MODES.ANALOG); 
+    console.log("Enabling analog pin 1");
+    board.pinMode(1, board.MODES.ANALOG); 
+});
+
+function handler(req, res) {
+    fs.readFile(__dirname + "/arrow03.html",
+    function (err, data) {
+        if (err) {
+            res.writeHead(500, {"Content-Type": "text/plain"});
+            return res.end("Error loading html page.");
+        }
+    res.writeHead(200);
+    res.end(data);
+    })
+}
+
+http.listen(8080); 
+
+var desiredValue = 0;
+var actualValue = 0;
+
+board.on("ready", function() {
+    
+    board.analogRead(0, function(value){
+        desiredValue = value; 
+    });
+    
+    board.analogRead(1, function(value){
+        actualValue = value; 
+    });    
+
+    
+    io.sockets.on("connection", function(socket) {
+        console.log("Socket id: " + socket.id);
+        socket.emit("messageToClient", "Srv connected, board OK");
+        setInterval(sendValues, 40, socket); 
+    }); 
+}); 
+
+function sendValues (socket) {
+    socket.emit("clientReadValues",
+    {
+    "desiredValue": desiredValue,
+    "actualValue" : actualValue
+    });
+};
