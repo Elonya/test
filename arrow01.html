@@ -17,7 +17,8 @@ Arrow
 "use strict"; 
     
 var canvas, ctx; 
-var x = 250;
+var x = 180;
+var I = 0;
 var step = 1;
   
 canvas = document.getElementById("cv1");
@@ -28,19 +29,19 @@ ctx.lineWidth = 5
 function loop() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    if (x > 400) {
+    if (x > 360) {
         step = -step; 
     }
-    if (x < 0) {
+    if (x < 180) {
         step = -step; 
     }
     
     x = x + step; 
-    
+    I= x/180*Math.PI;
     ctx.beginPath(); 
-    ctx.lineTo(200,200);
-    ctx.lineTo(x,200-200*Math.cos(Math.abs((200-x)/128)));
-    ctx.stroke ();  
+    ctx.lineTo(150,150);
+    ctx.lineTo(100*Math.cos(I)+150,100*Math.sin(I)+150);
+    ctx.stroke(); 
     
     setTimeout(loop, 5); 
 }

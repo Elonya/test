@@ -1,0 +1,111 @@
+<!doctype html>
+<meta charset="utf-8">
+
+
+
+<html>
+<head>
+<title> Arrow02 </title>    
+</head>
+    
+<body>
+Arrow
+<br>
+<canvas id="cv1" width="500" height="250" style="border:1px dashed #00c3c3"></canvas>
+
+<!DOCTYPE html>
+<meta charset = utf8>
+<html>
+
+<head>
+    <title>Example with potentiometer</title>
+</head>
+
+<body onload="load();">
+
+    
+<div>
+<canvas id="canvas1" width ="200" height = "100" style="border: 1px dashed #00c3c3;"></canvas>    
+</div>
+<p></p>
+
+
+<div id="divForPrint"></div>
+
+<br>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+<script type="text/javascript">
+"use strict";
+
+
+var divElement = document.getElementById("print1"); 
+var numberOfLinesBeforeScroll = 10;
+var linesPrintCounter = 0;
+
+
+var potValue1 = 0; 
+var x1 = new Array(); 
+var y1 = new Array(); 
+var canvas1;
+var ctx;
+
+
+  function log(msg) {
+    var node=document.createElement("tr"); 
+    var textnode=document.createTextNode(linesPrintCounter + " | " + msg); 
+    node.appendChild(textnode); 
+    divElement.insertBefore(node, divElement.childNodes[0]); 
+    if (linesPrintCounter > numberOfLinesBeforeScroll-1) { 
+        divElement.removeChild(divElement.childNodes[numberOfLinesBeforeScroll]); 
+    }
+    linesPrintCounter++; 
+}
+    
+function load() { 
+    canvas1 = document.getElementById("canvas1");
+    ctx1 = canvas1.getContext("2d");
+   
+    ctx1.lineWidth = "1";
+    ctx1.strokeStyle = "#ff0000";
+    
+    
+    for (var i=0; i<200; i++) {
+        x1[i] = i; 
+        y1[i] = 0; 
+    };
+};
+var socket = io.connect("192.168.1.102:8080"); 
+socket.on("messageToClient", function (msg) {
+    log(msg); 
+});
+ 
+
+
+socket.on("clientReadValues", function(value) {
+    potValue1 = value.desiredValue;
+    
+    
+     ctx1.clearRect(0, 0, canvas1.width, canvas1.height); 
+    if (x > 360) {
+        step = -step; 
+    }
+    if (x < 180) {
+        step = -step; 
+    }
+    
+    x = x + step; 
+    I= x/180*Math.PI;
+    ctx1.beginPath(); 
+    ctx1.lineTo(150,150);
+    ctx1.lineTo(100*Math.cos(I)+150,100*Math.sin(I)+150);
+    ctx1.stroke(); 
+    
+    log(value.desiredValue);
+});
+</script>
+    
+</body>
+    
+</html>
