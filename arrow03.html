@@ -9,7 +9,10 @@
 <body onload="load()";>
     
 <div>
-<canvas id="canvas1" width ="350" height = "250" style="border: 1px dashed #00c3c3;"></canvas>    
+<canvas id="canvas1" width ="350" height = "250" style="border: 1px dashed #00c3c3;"></canvas> 
+<br>   
+<canvas id="canvas2" width ="200" height = "100" style="border: 1px dashed #00c3c3;"></canvas> 
+<p></p>
 </div>    
     
 <div id="print1"></div>    
@@ -24,14 +27,21 @@ var divElement = document.getElementById("print1");
 var numberOfLinesBeforeScroll = 10;
 var linesPrintCounter = 0;
 var potValue1 = 0;
-var potValue2 = 0;  
+var potValue2 = 0;   
 var x1 = new Array(); 
 var y1 = new Array();
 var x2 = new Array(); 
 var y2 = new Array(); 
 var canvas1;
-var ctx1;   
+var ctx1;
+var x3 = new Array();
+var y3 = new Array();
+var x4 = new Array();
+var y4 = new Array();
+var ctx2;
+var canvas2;   
 var I;
+
 
 
 
@@ -47,9 +57,13 @@ function log(msg) {
 }
     
 function load() { 
+
     canvas1 = document.getElementById("canvas1");
     ctx1 = canvas1.getContext("2d");
-    
+
+
+    canvas2 = document.getElementById("canvas2");
+    ctx2 = canvas2.getContext("2d");
     
     for (var i=0; i<200; i++) {
         x1[i] = i; 
@@ -62,9 +76,18 @@ function load() {
         y2[i] = 0; 
     };
 
+    for (var i=0; i<200; i++) {
+        x3[i] = i; 
+        y3[i] = 0; 
+    };
+    for (var i=0; i<200; i++) {
+        x4[i] = i; 
+        y4[i] = 0; 
+    };
+
 };
 
-var socket = io.connect("192.168.1.102:8080"); 
+var socket = io.connect("192.168.1.100:8080"); 
 socket.on("messageToClient", function (msg) {
     log(msg); 
 });
@@ -90,6 +113,32 @@ socket.on("clientReadValues", function(value) {
     ctx1.lineTo(150,150); 
     ctx1.lineTo(100*Math.cos(I)+150,100*Math.sin(I)+150);
     ctx1.stroke();
+   
+
+    ctx2.lineWidth = "1";
+    ctx2.strokeStyle = "#ff0000";
+    ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+    ctx2.beginPath(); 
+    y3.splice(0, 1); 
+    y3[199] = potValue1; 
+    for (var i=0; i<200; i++) {
+        ctx2.lineTo(x3[i], (100 - (y3[i] / 1023) * 100)); 
+    };
+    
+    ctx2.stroke();
+    
+  
+
+    ctx2.lineWidth = "1";
+    ctx2.strokeStyle = "#00ff00";
+    ctx2.beginPath(); 
+    y4.splice(0, 1); 
+    y4[199] = potValue2; 
+    for (var i=0; i<200; i++) {
+        ctx2.lineTo(x4[i], (100 - (y4[i] / 1023) * 100)); 
+    };
+    ctx2.stroke(); 
+
     
     log(potValue1 + "|" + potValue2);
 });
